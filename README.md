@@ -1,103 +1,145 @@
-# Admin Panels, Rainbows & EasyAdminBundle
+## Install
+- composer require admin
+- symfony console make:admin:dashboard
 
-Well hi there! This repository holds the code and script
-for the EasyAdminBundle tutorial on SymfonyCasts.
+## Dashboard
 
-## Setup
+### configureMenuItems
+- MenuItem::linkToDashbord()
+- MenuItem::linkToCrud
+- MenuItem::linkToUrl()
+- MenuItem::section('Content');
+- MenuItem::subMenu->setSubItem()
 
-If you've just downloaded the code, congratulations!!
+#### Only on linkToCrud
+- setPermission()
+- setController()
 
-To get it working, follow these steps:
+#### Only on linkToUrl
+- setLinkTarget('_blank')
 
-**Download Composer dependencies**
+### configureUserMenu
+- setAvatarUrl($user->getAvatarUri())
+- addMenuItems([MenuItem::linkToUrl('....', 'icon', $this->generateUrl('account' ))]);
 
-Make sure you have [Composer installed](https://getcomposer.org/download/)
-and then run:
+## Page and Action
+- ACTION_NEW
+- ACTION_DETAIL
+- ACTION_INDEX
+- ACTION_EDIT
+- ACTION_DELETE
+- ACTION_BATCH_DELETE
 
-```
-composer install
-```
+## CRUD page
 
-You may alternatively need to run `php composer.phar install`, depending
-on how you installed Composer.
+### Field
+- FormField::addTab('Lineups')
+- IntegerField
+- AssociateField
+- BooleanField
+- TextField
+- TextAreaField
+- ArrayField
+- ChoiceField (with array for limited choice)
+- ImageField
+- CollectionField::new('lineups')
 
-**Database Setup**
+### Method Only on CollectionField
+ - setEntryIsComplex()
+ - setEntryType(LineupType::class)
+ - hideOnIndex()
+ - renderExpanded()
 
-The code comes with a `docker-compose.yaml` file and we recommend using
-Docker to boot a database container. You will still have PHP installed
-locally, but you'll connect to a database inside Docker. This is optional,
-but I think you'll love it!
+### Method only on ChoiceField:
+- setChoices(array_combine($roles, $roles))
+- allowMultipleChoices()
+- renderExpanded()
+- renderAsBadges()
 
-First, make sure you have [Docker installed](https://docs.docker.com/get-docker/)
-and running. To start the container, run:
+### Method only on ImageField
+- setBasePath("/img/team")
+- setUploadDir("/public/img/team")
+- setUploadedFileNamePattern('[timestamp].[extension]')
 
-```
-docker-compose up -d
-```
+### Method only on AssociateField
+- setFormTypeOption('choice_label', 'id')
+- setFormTypeOption('by_reference', false)
 
-Next, build the database, execute the migrations and load the fixtures with:
+### General method
+- setHelp('Available role: ROLE_USER, ROLE_ADMIN')
+- renderAsSwitch(false) (only on Boolean)
+- setTextAlign()
+- setMaxLength() only on TextField
+- setColumns(5)
+- setTemplatePath()
+- setPermission()
+- setFormTypeOptions(["attr"=> ['readonly' => true]])
+- formatValue(static function(User $user){return $user->getAvatarUrl()})
+- autocomplete()
+- setCrudControl(QuestionCrudController::class)
+- OnlyOnDetail() (show)
+- hideOnForm() (edit)
 
-```
-# "symfony console" is equivalent to "bin/console"
-# but its aware of your database container
-symfony console doctrine:database:create --if-not-exists
-symfony console doctrine:schema:update --force
-symfony console doctrine:fixtures:load
-```
+## ConfigureCrud: sorting or displaying Action button
+- setPageTitle(Crud::PAGE_INDEX, 'new title')
+- setHelp(Crud::PAGE_INDEX, 'new Help')
+- setDefaultSort()
+- showEntityActionsInlined()
+- setEntityPermission("ADMIN_USER_EDIT")
 
-The `symfony` binary can be downloaded from https://symfony.com/download.
+## ConfigureAction: set permission on Action
+- add(Crud::PAGE_INDEX, Action::DETAIL)
+- setPermission()
 
-(If you get an error about "MySQL server has gone away", just wait
-a few seconds and try again - the container is probably still booting).
+## ConfigFilterrs
+add('field')
 
-If you do *not* want to use Docker, just make sure to start your own
-database server and update the `DATABASE_URL` environment variable in
-`.env` or `.env.local` before running the commands above.
+## createIndexQueryBuilder
+return custom queryBuilder 
 
-**Webpack Encore Assets**
+## ConfigureAction: set permission on Action
+- setPermission()
+- add(Crud::PAGE_DETAIL, $viewAction)
+- add(Crud::PAGE_INDEX, Action::DETAIL)
+- disable(Action::DETAIL)
 
-This app uses Webpack Encore for the CSS, JS and image files.
-To build the Webpack Encore assets, make sure you have
-[Yarn](https://yarnpkg.com/lang/en/) installed and then run:
+## updateEntity and deleteEntity
+auto-update entity / forbidden delete
 
-```
-yarn install
-yarn encore dev --watch
-```
+## Create a new CRUD page with specific query
 
-**Start the Symfony web server**
+## Create a subscriber to Event : BeforeEntityUpdatedEvent
+update question.updatedBy connected user 
 
-You can use Nginx or Apache, but Symfony's local web server
-works even better.
+## Template
+Add template
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
 
-To install the Symfony local web server, follow
-"Downloading the Symfony client" instructions found
-here: https://symfony.com/download - you only need to do this
-once on your system.
+## Permission
+- On field
+- On Entity
+- On Action
 
-Then, to start the web server, open a terminal, move into the
-project, and run:
+## Create Action::new('actionName')
+- addCssClass()
+- setIcon()
+- setLabel()
+- displayAsButton()
+- setTemplatePath()
+- displayIf(static function(Question $question): bool {return !$question->getIsApproved();})
 
-```
-symfony serve
-```
+->linkToCrudAction()
+->linkToUrl(function (Question $question) {
+       return $this->generateUrl('app_question_show', [
+                    'slug' => $question->getSlug(),
+          ]);
+      })
 
-(If this is your first time using this command, you may see an
-error that you need to run `symfony server:ca:install` first).
 
-Now check out the site at `https://localhost:8000`
-
-Have fun!
-
-## Have Ideas, Feedback or an Issue?
-
-If you have suggestions or questions, please feel free to
-open an issue on this repository or comment on the course
-itself. We're watching both :).
-
-## Thanks!
-
-And as always, thanks so much for your support and letting
-us do what we love!
-
-<3 Your friends at SymfonyCasts
+## AdminUrlGenerator
+- setController(self::class)
+- setAction(Crud::PAGE_DETAIL)
+- setEntityId($question->getId())
+- generateUrl();
